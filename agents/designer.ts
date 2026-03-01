@@ -2,9 +2,6 @@ import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
 export interface DesignRecord {
   id: string
   title: string
@@ -16,6 +13,7 @@ export interface DesignRecord {
 
 // Use Claude to craft a detailed, high-quality DALL-E prompt from a raw theme
 async function buildImagePrompt(theme: string): Promise<string> {
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 300,
@@ -60,6 +58,7 @@ export async function runDesignerAgent(theme: string): Promise<DesignRecord> {
   console.log(`[Designer] Prompt: ${imagePrompt}`)
 
   // Step 2: Generate image with DALL-E 3
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
   const imageResponse = await openai.images.generate({
     model: 'dall-e-3',
     prompt: imagePrompt,
