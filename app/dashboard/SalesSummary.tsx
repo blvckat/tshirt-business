@@ -39,7 +39,7 @@ async function fetchSummary() {
       .eq('id', topSellerId)
       .single()
 
-    const design = data?.designs as { title: string; image_url: string } | null
+    const design = data?.designs as unknown as { title: string; image_url: string } | null
     if (design) bestSeller = design
   }
 

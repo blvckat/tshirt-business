@@ -69,7 +69,7 @@ export async function runDesignerAgent(theme: string): Promise<DesignRecord> {
     style: 'vivid',
   })
 
-  const imageUrl = imageResponse.data[0]?.url
+  const imageUrl = imageResponse.data?.[0]?.url
   if (!imageUrl) throw new Error('No image URL returned from DALL-E')
   console.log(`[Designer] Image generated: ${imageUrl}`)
 
