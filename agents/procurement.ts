@@ -1,6 +1,7 @@
 import { getShopId, uploadImage, createProduct, publishProduct, getProduct } from '@/lib/printify'
 import { createClient } from '@/lib/supabase/server'
 import { DesignRecord } from './designer'
+import { runMarketingAgent } from './marketing'
 
 // Unisex Softstyle T-Shirt (Gildan 64000) via Monster Digital
 const BLUEPRINT_ID = 145
@@ -87,5 +88,17 @@ export async function runProcurementAgent(design: DesignRecord): Promise<void> {
   })
 
   if (error) throw new Error(`Failed to save product to Supabase: ${error.message}`)
-  console.log(`[Procurement] Product saved to Supabase. Done.`)
+
+  const savedProduct = await supabase
+    .from('products')
+    .select('id')
+    .eq('printify_id', printifyProductId)
+    .single()
+
+  if (savedProduct.data?.id) {
+    console.log(`[Procurement] Running marketing agent...`)
+    await runMarketingAgent(design.title, savedProduct.data.id)
+  }
+
+  console.log(`[Procurement] All done for "${design.title}".`)
 }
