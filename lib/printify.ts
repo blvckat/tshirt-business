@@ -62,3 +62,24 @@ export async function uploadImage(payload: {
 export async function getOrderStatus(shopId: string, orderId: string) {
   return printifyFetch(`/shops/${shopId}/orders/${orderId}.json`)
 }
+
+// Publish a product to the connected sales channel (Shopify)
+export async function publishProduct(shopId: string, productId: string) {
+  return printifyFetch(`/shops/${shopId}/products/${productId}/publish.json`, {
+    method: 'POST',
+    body: JSON.stringify({
+      title: true,
+      description: true,
+      images: true,
+      variants: true,
+      tags: true,
+      keyFeatures: true,
+      shipping_template: true,
+    }),
+  })
+}
+
+// Get a single product (includes mockup images after creation)
+export async function getProduct(shopId: string, productId: string) {
+  return printifyFetch(`/shops/${shopId}/products/${productId}.json`)
+}
