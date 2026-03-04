@@ -2,8 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { runProcurementAgent } from '@/agents/procurement'
 import { DesignRecord } from '@/agents/designer'
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://tshirt-business.vercel.app'
 
 export async function approveDesign(design: DesignRecord) {
   const supabase = createClient()
@@ -15,7 +16,13 @@ export async function approveDesign(design: DesignRecord) {
 
   if (error) throw new Error(`Failed to approve design: ${error.message}`)
 
-  await runProcurementAgent(design)
+  // Fire procurement as a background request — don't await so the dashboard
+  // responds immediately. The API route runs with maxDuration = 300s.
+  fetch(`${APP_URL}/api/procurement`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(design),
+  }).catch((err) => console.error('[approveDesign] Procurement trigger failed:', err))
 
   revalidatePath('/dashboard')
 }
