@@ -70,12 +70,20 @@ export async function runProcurementAgent(design: DesignRecord): Promise<void> {
   // Step 4: Publish product to Shopify
   console.log(`[Procurement] Publishing to Shopify...`)
   await publishProduct(shopId, printifyProductId)
-  console.log(`[Procurement] Published to Shopify`)
+  console.log(`[Procurement] Publish triggered — polling for Shopify ID...`)
 
-  // Step 5: Fetch product again to get the Shopify external ID
-  const publishedProduct = await getProduct(shopId, printifyProductId)
-  const shopifyProductId: string | null = publishedProduct.external?.id ?? null
-  console.log(`[Procurement] Shopify product ID: ${shopifyProductId}`)
+  // Step 5: Poll for Shopify external ID (publish is async on Printify's side)
+  let shopifyProductId: string | null = null
+  for (let attempt = 1; attempt <= 10; attempt++) {
+    await new Promise((r) => setTimeout(r, 5000)) // wait 5s per attempt
+    const polled = await getProduct(shopId, printifyProductId)
+    shopifyProductId = polled.external?.id ?? null
+    console.log(`[Procurement] Poll ${attempt}/10 — Shopify ID: ${shopifyProductId ?? 'pending'}`)
+    if (shopifyProductId) break
+  }
+  if (!shopifyProductId) {
+    console.warn(`[Procurement] Shopify ID not received after 50s — saving null, will backfill later`)
+  }
 
   // Step 6: Save to Supabase products table
   const supabase = createClient()

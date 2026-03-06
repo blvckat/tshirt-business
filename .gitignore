@@ -31,6 +31,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# shopify theme (managed separately)
+/theme
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

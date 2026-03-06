@@ -57,10 +57,11 @@ Example format:
 
   const raw = textBlock.text.trim()
 
-  // Strip markdown code fences if present
-  const json = raw.startsWith('```')
-    ? raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
-    : raw
+  // Extract JSON array — handles raw JSON, or JSON wrapped in markdown code fences
+  // with or without preceding text
+  const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/)
+  const arrayMatch = raw.match(/(\[[\s\S]*\])/)
+  const json = fenceMatch ? fenceMatch[1].trim() : arrayMatch ? arrayMatch[1].trim() : raw
 
   try {
     const parsed = JSON.parse(json)

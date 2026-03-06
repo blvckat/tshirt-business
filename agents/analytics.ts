@@ -13,7 +13,7 @@ async function fetchShopifyOrders(date: string): Promise<{ count: number; revenu
   const storeUrl = process.env.SHOPIFY_STORE_URL
   const accessToken = process.env.SHOPIFY_ACCESS_TOKEN
 
-  if (!storeUrl || !accessToken || storeUrl === 'your-store.myshopify.com') {
+  if (!storeUrl || !accessToken || storeUrl === 'your-store.myshopify.com' || accessToken === 'your_shopify_access_token') {
     console.warn('[Analytics] Shopify credentials not configured — using zero values')
     return { count: 0, revenue: 0, topProductId: null }
   }
@@ -30,6 +30,11 @@ async function fetchShopifyOrders(date: string): Promise<{ count: number; revenu
       },
     }
   )
+
+  if (res.status === 401 || res.status === 403) {
+    console.warn('[Analytics] Shopify credentials invalid — using zero values')
+    return { count: 0, revenue: 0, topProductId: null }
+  }
 
   if (!res.ok) {
     const text = await res.text()
