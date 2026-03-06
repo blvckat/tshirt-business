@@ -14,23 +14,44 @@ export interface DesignRecord {
 // Use Claude to craft a detailed, high-quality DALL-E prompt from a raw theme
 async function buildImagePrompt(theme: string): Promise<string> {
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+  // Build a short, exact text phrase (≤4 words) for the shirt — Claude picks it
+  const phraseMsg = await anthropic.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 50,
+    messages: [
+      {
+        role: 'user',
+        content: `You are a gym apparel copywriter. Given the theme "${theme}", write ONE short, punchy phrase for a t-shirt (2–4 words, ALL CAPS). No punctuation. Return only the phrase.`,
+      },
+    ],
+  })
+  const phraseBlock = phraseMsg.content[0]
+  if (phraseBlock.type !== 'text') throw new Error('Unexpected response from Claude')
+  const exactText = phraseBlock.text.trim().toUpperCase().replace(/[^A-Z0-9 ]/g, '')
+  const spelled = exactText.split('').join('-')
+
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 300,
+    max_tokens: 400,
     messages: [
       {
         role: 'user',
         content: `You are a graphic designer specializing in gym and fitness apparel.
 Create a detailed DALL-E 3 image generation prompt for a t-shirt graphic based on this theme: "${theme}".
 
+The ONLY text on the shirt must be the exact phrase: "${exactText}"
+Spell it out letter by letter in your prompt like this: ${spelled}
+DALL-E must render this text with PERFECT spelling — include the letter-by-letter spelling in the prompt.
+
 Requirements:
-- Bold, impactful typography as the centerpiece
+- The exact text "${exactText}" as the bold typographic centerpiece, spelled ${spelled}
 - Dark background (black or very dark grey)
-- Motivational message related to the theme
 - Gym/fitness aesthetic (strong, raw, athletic energy)
 - High contrast, print-ready style
 - No photorealistic humans — graphic/illustrative style only
 - Suitable for screen printing on a t-shirt
+- Minimal decorative elements so text is readable
 
 Return ONLY the image prompt, nothing else.`,
       },
