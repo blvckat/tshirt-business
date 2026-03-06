@@ -15,20 +15,20 @@ export interface DesignRecord {
 async function buildImagePrompt(theme: string): Promise<string> {
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-  // Build a short, exact text phrase (≤4 words) for the shirt — Claude picks it
-  const phraseMsg = await anthropic.messages.create({
+  // Pick ONE single power word for the shirt — DALL-E renders single words reliably
+  const wordMsg = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 50,
+    max_tokens: 20,
     messages: [
       {
         role: 'user',
-        content: `You are a gym apparel copywriter. Given the theme "${theme}", write ONE short, punchy phrase for a t-shirt (2–4 words, ALL CAPS). No punctuation. Return only the phrase.`,
+        content: `You are a gym apparel designer. Given the theme "${theme}", choose ONE single powerful word for a t-shirt (ALL CAPS, max 8 letters — e.g. GRIND, IRON, BEAST, RISE, FORGE, GRIT). Return only the single word, nothing else.`,
       },
     ],
   })
-  const phraseBlock = phraseMsg.content[0]
-  if (phraseBlock.type !== 'text') throw new Error('Unexpected response from Claude')
-  const exactText = phraseBlock.text.trim().toUpperCase().replace(/[^A-Z0-9 ]/g, '')
+  const wordBlock = wordMsg.content[0]
+  if (wordBlock.type !== 'text') throw new Error('Unexpected response from Claude')
+  const exactText = wordBlock.text.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)
   const spelled = exactText.split('').join('-')
 
   const message = await anthropic.messages.create({
@@ -40,18 +40,17 @@ async function buildImagePrompt(theme: string): Promise<string> {
         content: `You are a graphic designer specializing in gym and fitness apparel.
 Create a detailed DALL-E 3 image generation prompt for a t-shirt graphic based on this theme: "${theme}".
 
-The ONLY text on the shirt must be the exact phrase: "${exactText}"
-Spell it out letter by letter in your prompt like this: ${spelled}
-DALL-E must render this text with PERFECT spelling — include the letter-by-letter spelling in the prompt.
+The ONLY text on the shirt is the single word: "${exactText}" (spelled: ${spelled})
+This word must be centered, massive, and dominant — it IS the design.
 
 Requirements:
-- The exact text "${exactText}" as the bold typographic centerpiece, spelled ${spelled}
+- The single word "${exactText}" (${spelled}) as a huge bold typographic centerpiece
 - Dark background (black or very dark grey)
-- Gym/fitness aesthetic (strong, raw, athletic energy)
+- Dramatic lighting, cracks, or energy effects behind the letters
+- Gym/fitness aesthetic (raw, powerful, athletic)
 - High contrast, print-ready style
-- No photorealistic humans — graphic/illustrative style only
-- Suitable for screen printing on a t-shirt
-- Minimal decorative elements so text is readable
+- No other words, no photorealistic humans
+- Suitable for screen printing on a black t-shirt
 
 Return ONLY the image prompt, nothing else.`,
       },
