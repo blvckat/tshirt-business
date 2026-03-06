@@ -68,17 +68,31 @@ export async function runDesignerAgent(theme: string): Promise<DesignRecord> {
     style: 'vivid',
   })
 
-  const imageUrl = imageResponse.data?.[0]?.url
-  if (!imageUrl) throw new Error('No image URL returned from DALL-E')
-  console.log(`[Designer] Image generated: ${imageUrl}`)
+  const dalleUrl = imageResponse.data?.[0]?.url
+  if (!dalleUrl) throw new Error('No image URL returned from DALL-E')
+  console.log(`[Designer] Image generated: ${dalleUrl}`)
 
-  // Step 3: Save to Supabase
+  // Step 3: Download image and upload to Supabase Storage (DALL-E URLs expire in ~2h)
   const supabase = createClient()
+  const imgRes = await fetch(dalleUrl)
+  if (!imgRes.ok) throw new Error(`Failed to download DALL-E image: ${imgRes.status}`)
+  const imgBuffer = Buffer.from(await imgRes.arrayBuffer())
+  const fileName = `${Date.now()}.png`
+
+  const { error: uploadError } = await supabase.storage
+    .from('designs')
+    .upload(fileName, imgBuffer, { contentType: 'image/png', upsert: false })
+  if (uploadError) throw new Error(`Supabase Storage upload failed: ${uploadError.message}`)
+
+  const { data: { publicUrl } } = supabase.storage.from('designs').getPublicUrl(fileName)
+  console.log(`[Designer] Image stored: ${publicUrl}`)
+
+  // Step 4: Save to Supabase
   const { data, error } = await supabase
     .from('designs')
     .insert({
       title: buildTitle(theme),
-      image_url: imageUrl,
+      image_url: publicUrl,
       status: 'pending',
     })
     .select()
