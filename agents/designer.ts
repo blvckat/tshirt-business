@@ -43,13 +43,15 @@ Create a DALL-E 3 image generation prompt for a t-shirt graphic based on this th
 The ONLY text on the shirt is the single word: "${exactText}" (spelled: ${spelled})
 
 Requirements:
-- The single word "${exactText}" (${spelled}) in ALL CAPS monospace terminal font — like a command line output or code editor
-- Pure black background, maximum empty space around the word
-- Text is centered, stark white, no drop shadows, no glow, no outlines
-- Font style: fixed-width monospace, similar to Courier New, IBM Plex Mono, or a CRT terminal typeface
-- Absolutely nothing else — no icons, no graphics, no circuit patterns, no decorations
-- The word floats alone on black — silence is the design
-- High contrast, print-ready, screen-print quality on black t-shirt
+- Pure WHITE background (print-ready canvas)
+- The single word "${exactText}" (${spelled}) in ALL CAPS, ultra-bold condensed monospace font — massive, filling the full width of the design, like a terminal command
+- Immediately after the word: a blinking cursor character ▌ or | in the same size
+- One line below in small monospace: "AWAITING INPUT_" left-aligned
+- All text is pure BLACK on the white background
+- Font: ultra-bold condensed monospace — think IBM Plex Mono Bold Condensed or a heavy terminal typeface
+- No decorations, no graphics, no borders, no shadows — pure typographic
+- The word should be so large it nearly bleeds off the edges of the canvas
+- Print-ready for screen printing on a white t-shirt
 
 Return ONLY the image prompt, nothing else.`,
       },
