@@ -9,8 +9,8 @@ const PRINT_PROVIDER_ID = 29
 const RETAIL_PRICE = 2999  // $29.99 in cents
 const COST = 1200          // ~$12.00 in cents
 
-// White variants: S, M, L, XL, 2XL, 3XL
-const WHITE_VARIANT_IDS = [38163, 38177, 38191, 38205, 38219, 42120]
+// Black variants: S, M, L, XL, 2XL, 3XL
+const BLACK_VARIANT_IDS = [38164, 38178, 38192, 38206, 38220, 42122]
 
 export async function runProcurementAgent(design: DesignRecord): Promise<void> {
   console.log(`[Procurement] Starting for design: "${design.title}" (${design.id})`)
@@ -33,14 +33,14 @@ export async function runProcurementAgent(design: DesignRecord): Promise<void> {
     description: `${design.title} — Built by algorithms. Worn by real ones. Minimal AI-culture graphic tee. White. Terminal.`,
     blueprint_id: BLUEPRINT_ID,
     print_provider_id: PRINT_PROVIDER_ID,
-    variants: WHITE_VARIANT_IDS.map(id => ({
+    variants: BLACK_VARIANT_IDS.map(id => ({
       id,
       price: RETAIL_PRICE,
       is_enabled: true,
     })),
     print_areas: [
       {
-        variant_ids: WHITE_VARIANT_IDS,
+        variant_ids: BLACK_VARIANT_IDS,
         placeholders: [
           {
             position: 'front',
