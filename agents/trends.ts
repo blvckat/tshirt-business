@@ -25,25 +25,25 @@ async function fetchTrends(): Promise<ParsedTrend[]> {
     messages: [
       {
         role: 'user',
-        content: `Search the web for what's trending RIGHT NOW in gym and fitness culture.
+        content: `Search the web for what's trending RIGHT NOW in AI and tech culture.
 Look for:
-- Viral workout trends (e.g. specific exercises going viral on TikTok/Instagram)
-- Popular gym quotes and motivational phrases
-- Fitness influencer themes and aesthetics
-- Trending gym challenges or movements
+- Viral AI concepts, tools, or memes (e.g. prompting, agents, LLMs going viral)
+- Popular phrases in the AI/developer/builder community
+- Trending ideas around AI autonomy, machine learning, the future of tech
+- Cultural moments at the intersection of AI and human identity
 
-After searching, return a JSON array of 5-10 trending keywords suitable for gym t-shirt designs.
+After searching, return a JSON array of 5-10 trending keywords suitable for AI-themed minimal streetwear t-shirt designs.
 Each item must have:
 - "keyword": the trend (2-5 words, t-shirt friendly)
-- "platform": where it's trending (e.g. "TikTok", "Instagram", "YouTube", "Reddit")
+- "platform": where it's trending (e.g. "X/Twitter", "Reddit", "GitHub", "LinkedIn", "YouTube")
 - "score": relevance score 1-10 (10 = hottest trend)
 
 Sort by score descending. Return ONLY a valid JSON array, no markdown, no extra text.
 
 Example format:
 [
-  { "keyword": "180 lb club", "platform": "TikTok", "score": 9 },
-  { "keyword": "chest day every day", "platform": "Instagram", "score": 8 }
+  { "keyword": "agents all the way down", "platform": "X/Twitter", "score": 9 },
+  { "keyword": "trust the algorithm", "platform": "Reddit", "score": 8 }
 ]`,
       },
     ],

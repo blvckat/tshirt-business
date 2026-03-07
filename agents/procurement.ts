@@ -30,7 +30,7 @@ export async function runProcurementAgent(design: DesignRecord): Promise<void> {
   console.log(`[Procurement] Creating Printify product...`)
   const product = await createProduct(shopId, {
     title: design.title,
-    description: `${design.title} — gym-ready graphic tee. Bold design, dark background, motivational energy.`,
+    description: `${design.title} — Built by algorithms. Worn by real ones. Minimal AI-culture graphic tee. Black. Clean.`,
     blueprint_id: BLUEPRINT_ID,
     print_provider_id: PRINT_PROVIDER_ID,
     variants: BLACK_VARIANT_IDS.map(id => ({

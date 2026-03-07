@@ -22,7 +22,7 @@ async function buildImagePrompt(theme: string): Promise<string> {
     messages: [
       {
         role: 'user',
-        content: `You are a gym apparel designer. Given the theme "${theme}", choose ONE single powerful word for a t-shirt (ALL CAPS, max 8 letters — e.g. GRIND, IRON, BEAST, RISE, FORGE, GRIT). Return only the single word, nothing else.`,
+        content: `You are a minimal streetwear designer for an AI-culture brand. Given the theme "${theme}", choose ONE single word for a t-shirt (ALL CAPS, max 8 letters — e.g. NEURAL, AGENT, MODEL, LOGIC, PROMPT, TOKEN, HUMAN, THINK). The word should feel AI/tech-native and culturally sharp. Return only the single word, nothing else.`,
       },
     ],
   })
@@ -37,20 +37,20 @@ async function buildImagePrompt(theme: string): Promise<string> {
     messages: [
       {
         role: 'user',
-        content: `You are a graphic designer specializing in gym and fitness apparel.
-Create a detailed DALL-E 3 image generation prompt for a t-shirt graphic based on this theme: "${theme}".
+        content: `You are a minimal streetwear graphic designer for an AI-culture brand. Motto: "Built by algorithms. Worn by real ones."
+Create a DALL-E 3 image generation prompt for a t-shirt graphic based on this theme: "${theme}".
 
 The ONLY text on the shirt is the single word: "${exactText}" (spelled: ${spelled})
-This word must be centered, massive, and dominant — it IS the design.
 
 Requirements:
-- The single word "${exactText}" (${spelled}) as a huge bold typographic centerpiece
-- Dark background (black or very dark grey)
-- Dramatic lighting, cracks, or energy effects behind the letters
-- Gym/fitness aesthetic (raw, powerful, athletic)
-- High contrast, print-ready style
-- No other words, no photorealistic humans
+- The single word "${exactText}" (${spelled}) — clean, stark, ultra-minimal sans-serif or monospace type
+- Pure black background
+- No gradients, no effects, no decorative elements — just the word and maybe one subtle geometric or circuit-like accent
+- Cold, precise, machine aesthetic — think terminal output, not grunge
+- High contrast white or light grey text on black
+- No other words, no humans, no photorealistic elements
 - Suitable for screen printing on a black t-shirt
+- Minimalism is the point — empty space is intentional
 
 Return ONLY the image prompt, nothing else.`,
       },

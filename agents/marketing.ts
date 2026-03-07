@@ -29,12 +29,14 @@ async function generateCopy(theme: string): Promise<GeneratedCopy> {
     messages: [
       {
         role: 'user',
-        content: `You are a fitness brand copywriter for a gym apparel company. Generate marketing copy for a t-shirt with this theme: "${theme}".
+        content: `You are a copywriter for BLVCKCAT.AI — a minimal AI-culture streetwear brand. Motto: "Built by algorithms. Worn by real ones." Generate marketing copy for a t-shirt with this theme: "${theme}".
+
+Tone: cold, precise, self-aware, minimal. Not hype. Not gym bro. Think dev culture meets streetwear.
 
 Return a JSON object with exactly this structure:
 {
-  "product_title": "A compelling gym-tone title, max 60 characters",
-  "description": "A 150-word benefits-focused, SEO-optimized product description for a gym t-shirt. Mention comfort, quality, and the motivational message.",
+  "product_title": "A minimal, sharp title — max 60 characters. No exclamation marks.",
+  "description": "A 100-word product description. Minimal, dry, slightly ironic. Reference AI culture. Mention the black tee, clean print, and the brand motto.",
   "bullet_points": [
     "Feature bullet 1",
     "Feature bullet 2",
@@ -43,11 +45,11 @@ Return a JSON object with exactly this structure:
     "Feature bullet 5"
   ],
   "ad_copies": [
-    { "platform": "Facebook", "copy": "Facebook ad copy, 2-3 sentences, conversational, includes a call to action" },
-    { "platform": "Instagram", "copy": "Instagram caption with energy and attitude, under 150 chars" },
+    { "platform": "X/Twitter", "copy": "Tweet-style copy, dry wit, under 280 chars, no hashtags inline" },
+    { "platform": "Instagram", "copy": "Caption with cold energy, under 150 chars, 1-2 relevant emojis max" },
     { "platform": "Instagram Story", "copy": "Short punchy story copy, max 80 chars, direct CTA" }
   ],
-  "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5"]
+  "hashtags": ["#BLVCKCATAI", "#AIFashion", "#hashtag3", "#hashtag4", "#hashtag5"]
 }
 
 Return ONLY valid JSON, no markdown, no extra text.`,
