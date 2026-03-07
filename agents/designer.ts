@@ -11,56 +11,51 @@ export interface DesignRecord {
   approved_at: string | null
 }
 
-// Use Claude to craft a detailed, high-quality DALL-E prompt from a raw theme
-async function buildImagePrompt(theme: string): Promise<string> {
+// Use Claude to generate the three text elements for the contrast design
+async function buildTextElements(theme: string): Promise<{ human: string; machine: string; qualifier: string }> {
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-  // Pick ONE single power word for the shirt — DALL-E renders single words reliably
-  const wordMsg = await anthropic.messages.create({
+  const msg = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 20,
+    max_tokens: 120,
     messages: [
       {
         role: 'user',
-        content: `You are a minimal streetwear designer for an AI-culture brand. Given the theme "${theme}", choose ONE single word for a t-shirt (ALL CAPS, max 8 letters — e.g. NEURAL, AGENT, MODEL, LOGIC, PROMPT, TOKEN, HUMAN, THINK). The word should feel AI/tech-native and culturally sharp. Return only the single word, nothing else.`,
-      },
-    ],
-  })
-  const wordBlock = wordMsg.content[0]
-  if (wordBlock.type !== 'text') throw new Error('Unexpected response from Claude')
-  const exactText = wordBlock.text.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)
-  const spelled = exactText.split('').join('-')
+        content: `You are a copywriter for BLVCKCAT.AI — an AI-culture streetwear brand. Motto: "Built by algorithms. Worn by real ones."
 
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 400,
-    messages: [
-      {
-        role: 'user',
-        content: `You are a minimal streetwear graphic designer for an AI-culture brand. Motto: "Built by algorithms. Worn by real ones."
-Create a DALL-E 3 image generation prompt for a t-shirt graphic based on this theme: "${theme}".
+Given the theme "${theme}", generate three text elements for a contrast t-shirt design:
 
-The ONLY text on the shirt is the single word: "${exactText}" (spelled: ${spelled})
+1. "human" — a short lowercase, warm, human-feeling phrase (2–4 words). Handwritten feel. Something emotionally honest. e.g. "still human", "kind of here", "i remember this"
+2. "machine" — a cold ALL-CAPS monospace response or reframe (1–3 words). Clinical, algorithmic. e.g. "FOR NOW", "UPDATING...", "DEPRECATED"
+3. "qualifier" — one small lowercase italic word of doubt or irony at the bottom. e.g. "probably", "mostly", "pending", "maybe"
 
-Requirements:
-- Pure WHITE background (print-ready canvas)
-- The single word "${exactText}" (${spelled}) in ALL CAPS, ultra-bold condensed monospace font — massive, filling the full width of the design, like a terminal command
-- Immediately after the word: a blinking cursor character ▌ or | in the same size
-- One line below in small monospace: "AWAITING INPUT_" left-aligned
-- All text is pure BLACK on the white background
-- Font: ultra-bold condensed monospace — think IBM Plex Mono Bold Condensed or a heavy terminal typeface
-- No decorations, no graphics, no borders, no shadows — pure typographic
-- The word should be so large it nearly bleeds off the edges of the canvas
-- Print-ready for screen printing on a white t-shirt
-
-Return ONLY the image prompt, nothing else.`,
+Return ONLY a JSON object: {"human": "...", "machine": "...", "qualifier": "..."}`,
       },
     ],
   })
 
-  const block = message.content[0]
+  const block = msg.content[0]
   if (block.type !== 'text') throw new Error('Unexpected response from Claude')
-  return block.text.trim()
+
+  const raw = block.text.trim()
+  const match = raw.match(/\{[\s\S]*\}/)
+  if (!match) throw new Error(`Could not parse text elements JSON: ${raw}`)
+  return JSON.parse(match[0])
+}
+
+// Use Claude to craft a detailed, high-quality DALL-E prompt from a raw theme
+async function buildImagePrompt(theme: string): Promise<string> {
+  const { human, machine, qualifier } = await buildTextElements(theme)
+
+  return `T-shirt graphic design, print-ready, white canvas background.
+
+Layout from top to bottom, centered:
+1. The phrase "${human}" in loose casual handwritten script, warm and imperfect, white text
+2. A thin horizontal rule (hairline) spanning the full width
+3. The text "${machine}" in ultra-bold condensed cold monospace ALL CAPS, much larger than the script above, white text
+4. The word "${qualifier}" in small delicate italic, bottom center, white text
+
+Style: human warmth meets machine coldness — the contrast between the handwritten script and the stark monospace IS the concept. Black background fills the design area. White background border around design for printing. No graphics, no icons, no decorations — pure typography only. Print-ready for screen printing.`
 }
 
 // Generate a short title for the design from the theme
