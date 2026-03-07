@@ -6,8 +6,8 @@ import { useCart } from './CartContext';
 export default function CartDrawer() {
   const { items, dispatch, subtotal, isOpen, closeCart } = useCart();
 
-  const fmt = (cents: number) =>
-    `$${(cents / 100).toFixed(2)}`;
+  const fmt = (dollars: number) =>
+    `$${Number(dollars).toFixed(2)}`;
 
   return (
     <>

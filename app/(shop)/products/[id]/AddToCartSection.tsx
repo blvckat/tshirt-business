@@ -10,7 +10,7 @@ interface Props {
   printifyId: string;
   title: string;
   imageUrl: string;
-  price: number; // cents
+  price: number; // dollars
 }
 
 export default function AddToCartSection({

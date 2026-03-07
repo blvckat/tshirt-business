@@ -8,7 +8,7 @@ export interface CartItem {
   title: string;
   imageUrl: string;
   size: string;
-  price: number; // cents
+  price: number; // dollars
   quantity: number;
 }
 

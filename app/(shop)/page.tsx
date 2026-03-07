@@ -40,7 +40,7 @@ export default async function ShopPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-px bg-black/10">
           {items.map((product, idx) => {
             const code = `TS-${String(idx + 1).padStart(2, '0')}`;
-            const price = `$${(product.price / 100).toFixed(2)}`;
+            const price = `$${Number(product.price).toFixed(2)}`;
             return (
               <Link
                 key={product.id}

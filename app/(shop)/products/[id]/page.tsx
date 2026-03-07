@@ -35,7 +35,7 @@ export default async function ProductPage({ params }: Props) {
   };
 
   const title = copy?.product_title ?? design?.title ?? 'BLVCKCAT TEE';
-  const price = product.price ?? 2999;
+  const price = product.price ?? 29.99;
   const imageUrl = design?.image_url ?? '';
   const description = copy?.description ?? '';
   const bullets: string[] = Array.isArray(copy?.bullet_points)
@@ -69,7 +69,7 @@ export default async function ProductPage({ params }: Props) {
               {title}
             </h1>
             <p className="font-mono text-sm tracking-widest uppercase mt-2">
-              ${(price / 100).toFixed(2)}
+              ${Number(price).toFixed(2)}
             </p>
           </div>
 
