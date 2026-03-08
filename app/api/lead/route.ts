@@ -9,6 +9,8 @@ function isAuthorized(req: NextRequest): boolean {
   return auth === `Bearer ${secret}`
 }
 
+// Vercel Cron sends GET; keep POST for manual triggers
+export const GET = POST
 export async function POST(req: NextRequest) {
   if (!isAuthorized(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
