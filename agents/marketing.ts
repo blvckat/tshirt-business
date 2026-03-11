@@ -9,6 +9,8 @@ export interface MarketingCopy {
   bullet_points: string[]
   ad_copies: { platform: string; copy: string }[]
   hashtags: string[]
+  x_posted_at: string | null
+  instagram_posted_at: string | null
   created_at: string
 }
 
@@ -67,15 +69,103 @@ Return ONLY valid JSON, no markdown, no extra text.`,
   }
 }
 
+// Post to X (Twitter) using API v2 with OAuth 1.0a
+async function postToX(copy: GeneratedCopy, imageUrl: string): Promise<boolean> {
+  const apiKey = process.env.TWITTER_API_KEY
+  const apiSecret = process.env.TWITTER_API_SECRET
+  const accessToken = process.env.TWITTER_ACCESS_TOKEN
+  const accessSecret = process.env.TWITTER_ACCESS_SECRET
+
+  if (!apiKey || !apiSecret || !accessToken || !accessSecret) {
+    console.warn('[Marketing] X credentials not configured — skipping X post')
+    return false
+  }
+
+  try {
+    const { TwitterApi } = await import('twitter-api-v2')
+    const client = new TwitterApi({ appKey: apiKey, appSecret: apiSecret, accessToken, accessSecret })
+
+    const tweetCopy = copy.ad_copies.find(a => a.platform === 'X/Twitter')?.copy ?? copy.product_title
+    const hashtags = copy.hashtags.slice(0, 3).join(' ')
+    const tweetText = `${tweetCopy}\n\n${hashtags}`
+
+    // Upload image then tweet with media
+    const mediaId = await client.v1.uploadMedia(imageUrl, { mimeType: 'image/png', target: 'tweet' })
+    await client.v2.tweet({ text: tweetText, media: { media_ids: [mediaId] } })
+
+    console.log('[Marketing] Posted to X successfully')
+    return true
+  } catch (err) {
+    console.error('[Marketing] X post failed:', err)
+    return false
+  }
+}
+
+// Post to Instagram via Graph API (requires Business account)
+async function postToInstagram(copy: GeneratedCopy, imageUrl: string): Promise<boolean> {
+  const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN
+  const accountId = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID
+
+  if (!accessToken || !accountId) {
+    console.warn('[Marketing] Instagram credentials not configured — skipping Instagram post')
+    return false
+  }
+
+  try {
+    const igCopy = copy.ad_copies.find(a => a.platform === 'Instagram')?.copy ?? copy.product_title
+    const hashtags = copy.hashtags.join(' ')
+    const caption = `${igCopy}\n\n${hashtags}\n\nBlvckcatai.com`
+
+    // Step 1: Create media container
+    const containerRes = await fetch(
+      `https://graph.facebook.com/v19.0/${accountId}/media`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_url: imageUrl, caption, access_token: accessToken }),
+      }
+    )
+    const container = await containerRes.json()
+    if (!container.id) throw new Error(`Container creation failed: ${JSON.stringify(container)}`)
+
+    // Step 2: Publish
+    const publishRes = await fetch(
+      `https://graph.facebook.com/v19.0/${accountId}/media_publish`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ creation_id: container.id, access_token: accessToken }),
+      }
+    )
+    const published = await publishRes.json()
+    if (!published.id) throw new Error(`Publish failed: ${JSON.stringify(published)}`)
+
+    console.log('[Marketing] Posted to Instagram successfully')
+    return true
+  } catch (err) {
+    console.error('[Marketing] Instagram post failed:', err)
+    return false
+  }
+}
+
 export async function runMarketingAgent(
   theme: string,
-  productId: string
+  productId: string,
+  imageUrl?: string
 ): Promise<MarketingCopy> {
   console.log(`[Marketing] Generating copy for: "${theme}" (product: ${productId})`)
 
   const copy = await generateCopy(theme)
   console.log(`[Marketing] Generated title: "${copy.product_title}"`)
 
+  // Post to socials (both run in parallel, failures are non-fatal)
+  const url = imageUrl ?? ''
+  const [xPosted, igPosted] = await Promise.all([
+    url ? postToX(copy, url) : Promise.resolve(false),
+    url ? postToInstagram(copy, url) : Promise.resolve(false),
+  ])
+
+  const now = new Date().toISOString()
   const supabase = createClient()
   const { data, error } = await supabase
     .from('marketing_copy')
@@ -86,6 +176,8 @@ export async function runMarketingAgent(
       bullet_points: copy.bullet_points,
       ad_copies: copy.ad_copies,
       hashtags: copy.hashtags,
+      x_posted_at: xPosted ? now : null,
+      instagram_posted_at: igPosted ? now : null,
     })
     .select()
     .single()

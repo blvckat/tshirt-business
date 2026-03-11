@@ -105,7 +105,7 @@ export async function runProcurementAgent(design: DesignRecord): Promise<void> {
 
   if (savedProduct.data?.id) {
     console.log(`[Procurement] Running marketing agent...`)
-    await runMarketingAgent(design.title, savedProduct.data.id)
+    await runMarketingAgent(design.title, savedProduct.data.id, design.image_url)
   }
 
   console.log(`[Procurement] All done for "${design.title}".`)

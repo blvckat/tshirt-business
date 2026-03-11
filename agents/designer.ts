@@ -2,6 +2,50 @@ import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 
+// Rotating visual styles — prevents repetitive neural net imagery
+const VISUAL_STYLES = [
+  {
+    name: 'glitch portrait',
+    description: 'A human face rendered with heavy digital glitch corruption — RGB channel separation pulling the eyes apart, scan lines slicing through the face, pixel fragmentation at the edges. The face is still recognizable but fractured by data errors. Raw and unsettling.',
+  },
+  {
+    name: 'pixel figure',
+    description: 'Bold chunky pixel art of a human silhouette or character — 16-bit video game aesthetic, very limited 3-color palette (white, black, one accent), large visible pixels, strong simple pose. Like a video game sprite blown up to poster size.',
+  },
+  {
+    name: 'data body',
+    description: 'A human figure or torso dissolving into a dense cloud of data points, particles, and scatter-plot dots — the body is only suggested by the density of particles, more solid at the core and dispersing at the edges into noise.',
+  },
+  {
+    name: 'vintage computer art',
+    description: 'A retrofuturist illustration in the style of 1980s computer manuals and early personal computing magazines — dot matrix printing texture, dithered shading, crude line art of a human or machine, CRT monitor color palette. Nostalgic and imperfect.',
+  },
+  {
+    name: 'wireframe human',
+    description: 'A human head, torso, or full figure rendered as a clean 3D wireframe mesh — precise white lines on black, the kind of geometry from early 3D CAD or cinema 4D, no fill, just the skeleton of the form in crisp mathematical lines.',
+  },
+  {
+    name: 'corrupted everyday object',
+    description: 'A mundane everyday object (coffee cup, sneaker, phone, hand, eye) rendered photorealistically but with severe digital corruption — JPEG artifacts, color banding, missing chunks replaced by solid color blocks, scan line interference. The familiar made strange.',
+  },
+  {
+    name: 'ink meets digital',
+    description: 'Bold sumi-e ink brush strokes of a human figure or face, but the ink is interrupted and corrupted by hard digital glitch blocks — the organic flow of ink paint colliding with cold pixel errors. East-meets-algorithm.',
+  },
+  {
+    name: 'hand reaching',
+    description: 'A single human hand or arm in a dramatic gesture — reaching upward, pointing, or open-palm — with thin circuit traces running up the veins like technology under skin. Minimal, centered, high contrast. The hand is the focus, no background.',
+  },
+  {
+    name: 'brutalist data poster',
+    description: 'Swiss/Bauhaus brutalist design — bold hard-edged geometric shapes (circles, rectangles, diagonal lines) arranged in a stark asymmetric composition. Black and white only, no gradients, graphic design that looks like it could be a protest poster or a Soviet-era geometric art piece.',
+  },
+  {
+    name: 'surveillance aesthetic',
+    description: 'Security camera or CCTV footage aesthetic — a human figure viewed from above or a face viewed through a surveillance lens, timestamp and camera ID overlaid, grainy low-resolution texture, wide-angle distortion at the edges. The feeling of being watched.',
+  },
+]
+
 export interface DesignRecord {
   id: string
   title: string
@@ -15,23 +59,29 @@ export interface DesignRecord {
 async function buildImagePrompt(theme: string): Promise<{ prompt: string; title: string }> {
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+  // Pick a random visual style for this run
+  const style = VISUAL_STYLES[Math.floor(Math.random() * VISUAL_STYLES.length)]
+
   const msg = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 300,
+    max_tokens: 400,
     messages: [
       {
         role: 'user',
         content: `You are an art director for BLVCKCAT.AI — an AI-culture streetwear brand. Motto: "Built by algorithms. Worn by real ones."
 
-Given the theme "${theme}", create a DALL-E 3 image prompt for a minimal graphic t-shirt design.
+Theme: "${theme}"
+Visual style to use: "${style.name}" — ${style.description}
+
+Create a DALL-E 3 image prompt for a minimal graphic t-shirt design using EXACTLY the visual style described above. Do not default to neural networks or circuit boards unless that is the specified style.
 
 Rules:
+- Use the specified visual style — this is mandatory
 - Pure visual/graphic only — NO text, NO words, NO letters, NO numbers in the image
-- Black shirt, white or light graphic
-- Minimal, clean, high-contrast
-- AI/tech/digital aesthetic: circuits, neural nets, glitch art, data visualization, abstract geometry, pixel art, wireframes, code structures, binary patterns
-- Think: Supreme-style impact, Fear of God minimal luxury, but with AI aesthetic
-- White background for the generated image (the graphic will be placed on a black shirt)
+- White or light-colored graphic designed to sit on a black shirt
+- High contrast, minimal, bold — Supreme-level graphic impact
+- White background for the generated image
+- The composition should be centered, roughly 60-70% of the frame
 
 Return ONLY valid JSON:
 {"prompt": "...", "title": "short product title (2-4 words)"}`,

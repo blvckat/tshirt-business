@@ -3,17 +3,43 @@ import { createClient } from '@/lib/supabase/server'
 import { DesignRecord } from '@/agents/designer'
 import DesignCard from './DesignCard'
 import SalesSummary from './SalesSummary'
+import MarketingPanel from './MarketingPanel'
 
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
   const supabase = createClient()
 
-  const { data: designs, error } = await supabase
-    .from('designs')
-    .select('*')
-    .eq('status', 'pending')
-    .order('created_at', { ascending: false })
+  const [{ data: designs, error }, { data: marketingRaw }] = await Promise.all([
+    supabase
+      .from('designs')
+      .select('*')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('marketing_copy')
+      .select('id, product_title, description, bullet_points, ad_copies, hashtags, x_posted_at, instagram_posted_at, products(design_id, designs(image_url))')
+      .order('created_at', { ascending: false })
+      .limit(20),
+  ])
+
+  type RawMarketing = {
+    id: string; product_title: string; description: string
+    bullet_points: string[]; ad_copies: { platform: string; copy: string }[]
+    hashtags: string[]; x_posted_at: string | null; instagram_posted_at: string | null
+    products: { designs: { image_url: string } | null } | null
+  }
+  const marketingEntries = (marketingRaw as unknown as RawMarketing[] ?? []).map((m) => ({
+    id: m.id,
+    product_title: m.product_title,
+    description: m.description,
+    bullet_points: m.bullet_points,
+    ad_copies: m.ad_copies,
+    hashtags: m.hashtags,
+    x_posted_at: m.x_posted_at,
+    instagram_posted_at: m.instagram_posted_at,
+    image_url: m.products?.designs?.image_url ?? '',
+  }))
 
   if (error) {
     return (
@@ -53,6 +79,13 @@ export default async function DashboardPage() {
             ))}
           </div>
         )}
+
+        {/* Marketing Copy */}
+        <div className="mt-12 mb-4">
+          <h2 className="text-lg font-semibold text-white">Marketing Copy</h2>
+          <p className="text-zinc-400 mt-1 text-sm">Ad copy, post to X and Instagram directly from here.</p>
+        </div>
+        <MarketingPanel entries={marketingEntries} />
       </div>
     </main>
   )

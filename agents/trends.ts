@@ -25,25 +25,35 @@ async function fetchTrends(): Promise<ParsedTrend[]> {
     messages: [
       {
         role: 'user',
-        content: `Search the web for what's trending RIGHT NOW in AI and tech culture.
-Look for:
-- Viral AI concepts, tools, or memes (e.g. prompting, agents, LLMs going viral)
-- Popular phrases in the AI/developer/builder community
-- Trending ideas around AI autonomy, machine learning, the future of tech
-- Cultural moments at the intersection of AI and human identity
+        content: `Search the web for what's trending RIGHT NOW at the intersection of AI, tech culture, and human identity.
 
-After searching, return a JSON array of 5-10 trending keywords suitable for AI-themed minimal streetwear t-shirt designs.
+Search across X/Twitter, Reddit (r/artificial, r/singularity, r/MachineLearning, r/ChatGPT), TikTok, GitHub trending, and tech newsletters.
+
+Look for trends in these specific categories — aim for variety across all of them:
+1. HUMAN FEELINGS about AI — anxiety, wonder, alienation, dependency, loss of identity ("i let the AI decide", "who am i without google", "outsourcing my thoughts")
+2. DEV/BUILDER CULTURE — viral phrases from the builder/indie hacker scene, shipping culture, vibe coding, AI-assisted work ("built this in 3 hours with claude", "prompt engineer", "ship it or skip it")
+3. POP CULTURE x AI — moments where AI intersects with music, fashion, sports, memes ("ai generated my outfit", "my playlist knows me better than i do")
+4. EXISTENTIAL/PHILOSOPHICAL — questions about consciousness, authenticity, what makes us human in the age of AI
+5. SPECIFIC AI TOOLS GOING VIRAL — reactions to specific products, features, or capabilities crossing into mainstream culture
+
+Return 8 trending themes suitable for minimal streetwear graphic tees from BLVCKCAT.AI.
+Each keyword should feel like something a real person would wear — not a tech whitepaper title.
+Avoid generic terms like "machine learning" or "neural network". Think cultural phrases, not tech jargon.
+
 Each item must have:
-- "keyword": the trend (2-5 words, t-shirt friendly)
-- "platform": where it's trending (e.g. "X/Twitter", "Reddit", "GitHub", "LinkedIn", "YouTube")
-- "score": relevance score 1-10 (10 = hottest trend)
+- "keyword": the theme (2-6 words, evocative, wearable)
+- "platform": where it's trending
+- "score": relevance score 1-10
 
 Sort by score descending. Return ONLY a valid JSON array, no markdown, no extra text.
 
-Example format:
+Example of GOOD keywords: "i think therefore i prompt", "trained on everything i've ever said", "running out of context window", "ghost in the machine learning"
+Example of BAD keywords: "neural network", "machine learning trends", "AI technology"
+
+Format:
 [
-  { "keyword": "agents all the way down", "platform": "X/Twitter", "score": 9 },
-  { "keyword": "trust the algorithm", "platform": "Reddit", "score": 8 }
+  { "keyword": "trained on everything i've ever said", "platform": "X/Twitter", "score": 9 },
+  { "keyword": "ghost in the machine learning", "platform": "Reddit", "score": 8 }
 ]`,
       },
     ],
@@ -73,7 +83,7 @@ Example format:
 }
 
 export async function runTrendsAgent(): Promise<TrendResult[]> {
-  console.log('[Trends] Searching for gym/fitness trends...')
+  console.log('[Trends] Searching for AI-culture trends...')
 
   const trends = await fetchTrends()
   console.log(`[Trends] Found ${trends.length} trends`)
